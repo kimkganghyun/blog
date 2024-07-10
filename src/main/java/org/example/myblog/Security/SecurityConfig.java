@@ -22,13 +22,18 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
-                                .requestMatchers("/","/api/users/register", "/api/users/login",
-                                        "/css/**", "/js/**", "/images/**","/register",
+                                .requestMatchers("/", "/api/users/register", "/api/users/login",
+                                        "/css/**", "/js/**", "/images/**", "/register",
                                         "/api/users/name/**", "/api/users/email/**",
-                                        "/login").permitAll()
+                                        "/login", "/@**", "/api/blogs/**", "/api/users/logout",
+                                        "/blogs/@**").permitAll()
                                 .anyRequest().authenticated()
                 )
-                .csrf(csrf -> csrf.disable()); // 필요에 따라 CSRF 보호 비활성화
+                .formLogin().loginPage("/login").permitAll()
+                .and()
+                .logout().permitAll()
+                .and()
+                .csrf().disable();
         return http.build();
     }
 }

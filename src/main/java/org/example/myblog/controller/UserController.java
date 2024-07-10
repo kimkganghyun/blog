@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -56,19 +58,23 @@ public class UserController {
     // 로그인
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
-        System.out.println("Login attempt: " + loginRequest.getEmail());
-        boolean loginSuccess = userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
+        System.out.println("Login attempt: " + loginRequest.getName());
+        boolean loginSuccess = userService.loginUser(loginRequest.getName(), loginRequest.getPassword());
         if (loginSuccess) {
-            // JWT 또는 세션 ID를 생성하고 쿠키에 설정
-            String token = "generated-jwt-token";  // 실제 JWT 토큰 생성 로직 필요
-            Cookie cookie = new Cookie("token", token);
-            cookie.setHttpOnly(true);
+            System.out.println("Login successful for: " + loginRequest.getName());
+            String userName = loginRequest.getName();
+            Cookie cookie = new Cookie("userName", userName);
             cookie.setPath("/");
             response.addCookie(cookie);
 
-            return ResponseEntity.ok().body("로그인 성공");
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("message", "로그인 성공");
+            return ResponseEntity.ok(responseBody);
         } else {
-            return ResponseEntity.status(401).body("로그인 실패");
+            System.out.println("Login failed for: " + loginRequest.getName());
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("message", "로그인 실패");
+            return ResponseEntity.status(401).body(responseBody);
         }
     }
 
@@ -81,11 +87,13 @@ public class UserController {
     // 로그아웃
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser(HttpServletResponse response) {
-        Cookie cookie = new Cookie("token", null);
+        Cookie cookie = new Cookie("userName", null);
         cookie.setMaxAge(0);
         cookie.setPath("/");
         response.addCookie(cookie);
-        return ResponseEntity.ok().body("로그아웃 성공");
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", "로그아웃 성공");
+        return ResponseEntity.ok(responseBody);
     }
 
     // 사용자 업데이트
@@ -104,6 +112,6 @@ public class UserController {
 @Getter
 @Setter
 class LoginRequest {
-    private String email;
+    private String name;
     private String password;
 }

@@ -8,6 +8,74 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function getCookie(name) {
+            let cookieArr = document.cookie.split(";");
+            for (let i = 0; i < cookieArr.length; i++) {
+                let cookiePair = cookieArr[i].split("=");
+                if (name === cookiePair[0].trim()) {
+                    return decodeURIComponent(cookiePair[1]);
+                }
+            }
+            return null;
+        }
+
+        function deleteCookie(name) {
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const usernameDisplay = document.getElementById("usernameDisplay");
+            const authButtons = document.getElementById("authButtons");
+            const userMenu = document.getElementById("userMenu");
+            const newPostButton = document.getElementById("newPostButton");
+            const myBlogLink = document.getElementById("myBlogLink");
+
+            const userName = getCookie("userName");
+            if (userName) {
+                usernameDisplay.textContent = `${userName}님`;
+                authButtons.style.display = "none";
+                userMenu.style.display = "inline-block";
+                newPostButton.style.display = "inline-block";
+                myBlogLink.href = `/@${userName}`;
+            } else {
+                authButtons.style.display = "block";
+                userMenu.style.display = "none";
+                newPostButton.style.display = "none";
+            }
+        });
+
+        async function logout() {
+            try {
+                const response = await fetch("/api/users/logout", {
+                    method: "POST"
+                });
+
+                console.log(`Logout response:`, response);
+
+                if (!response.ok) {
+                    throw new Error("로그아웃 실패");
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '로그아웃 성공',
+                }).then(() => {
+                    deleteCookie("userName");
+                    window.location.href = '/';
+                });
+
+            } catch (error) {
+                console.error("Error during logout:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: '로그아웃 실패',
+                    text: error.message,
+                });
+            }
+        }
+    </script>
 </head>
 <body>
 <div class="navbar">
@@ -29,7 +97,7 @@
         <div id="userMenu" class="dropdown" style="display: none;">
             <span id="usernameDisplay" class="username"></span>
             <div class="dropdown-content" id="userDropdown">
-                <a href="/my-blog">내 블로그</a>
+                <a id="myBlogLink" href="#">내 블로그</a>
                 <a href="/posts/drafts">임시 글</a>
                 <a href="#" onclick="showReadLaterPosts()">읽기 목록</a>
                 <a href="#" onclick="showSettings()">설정</a>

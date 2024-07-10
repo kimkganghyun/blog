@@ -33,10 +33,11 @@ async function login() {
         console.log(`Login response:`, response);
 
         if (!response.ok) {
-            throw new Error("로그인 실패");
+            const errorResponse = await response.json();
+            throw new Error(errorResponse.message);
         }
 
-        const data = await response.text();  // 응답 본문을 텍스트로 읽기
+        const data = await response.json();
         console.log(`Login successful:`, data);
 
         Swal.fire({

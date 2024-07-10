@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog</title>
+    <link rel="stylesheet" th:href="@{/css/blog.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+<div class="navbar">
+    <div class="left satisfy-regular">
+        <a href="/" class="navbar-link">Blog</a>
+    </div>
+    <div class="right">
+        <button class="img-button" onclick="location.href='/notifications'">
+            <img src="/images/free-icon-alarm-bell-1059063.png" alt="알람" width="24" height="24">
+        </button>
+        <button class="img-button" onclick="location.href='/search'">
+            <img src="/images/free-icon-search-710082.png" alt="검색" width="24" height="24">
+        </button>
+        <button id="newPostButton" style="display: none;" onclick="location.href='/posts/create'">새 글 작성</button>
+        <div id="authButtons">
+            <button onclick="location.href='/login'">로그인</button>
+            <button onclick="location.href='/register'">회원가입</button>
+        </div>
+        <div id="userMenu" class="dropdown" style="display: none;">
+            <span id="usernameDisplay" class="username"></span>
+            <div class="dropdown-content" id="userDropdown">
+                <a id="myBlogLink" href="#">내 블로그</a>
+                <a href="/posts/drafts">임시 글</a>
+                <a href="#" onclick="showReadLaterPosts()">읽기 목록</a>
+                <a href="#" onclick="showSettings()">설정</a>
+                <a href="#" onclick="logout()">로그아웃</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content">
+    <h1 id="blogTitle"></h1>
+    <div class="tags" id="tags"></div>
+    <div class="posts" id="posts"></div>
+    <div class="series" id="series"></div>
+    <div class="about" id="about"></div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const username = window.location.pathname.split('/@')[1];
+        if (!username) {
+            Swal.fire({
+                icon: 'error',
+                title: '오류',
+                text: '사용자 이름을 찾을 수 없습니다.',
+            });
+            return;
+        }
+
+        fetch(`/api/blogs/@${username}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('블로그를 찾을 수 없습니다.');
+                }
+                return response.json();
+            })
+            .then(blog => {
+                document.getElementById("blogTitle").textContent = `${blog.user.name}님의 블로그`;
+
+                // 태그, 글 목록, 시리즈, 소개 등 추가 로직 구현
+                // 예시: posts
+                fetch(`/api/blogs/@${username}/posts`)
+                    .then(response => response.json())
+                    .then(posts => {
+                        const postsContainer = document.getElementById("posts");
+                        posts.forEach(post => {
+                            const postElement = document.createElement("div");
+                            postElement.innerHTML = `<h2>${post.title}</h2><p>${post.content}</p>`;
+                            postsContainer.appendChild(postElement);
+                        });
+                    });
+
+                // 시리즈 목록, 태그 목록, 소개 등도 비슷한 방식으로 추가하면 됩니다.
+            })
+            .catch(error => {
+                console.error("Error fetching blog:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: '오류',
+                    text: '블로그를 불러오는 중 오류가 발생했습니다.',
+                });
+            });
+    });
+</script>
+</body>
+</html>
