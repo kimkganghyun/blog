@@ -1,5 +1,7 @@
 package org.example.myblog.service;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.example.myblog.model.Blog;
@@ -70,7 +72,7 @@ public class UserService {
     }
 
     // 로그인 (단순히 사용자 존재 여부 확인)
-    public boolean loginUser(String name, String password) {
+    public boolean loginUser(String name, String password, HttpServletResponse response) {
         Optional<User> user = userRepository.findByName(name);
         if (user.isPresent()) {
             boolean passwordMatches = passwordEncoder.matches(password, user.get().getPassword());
@@ -78,6 +80,11 @@ public class UserService {
             System.out.println("Password matches: " + passwordMatches);
             if (passwordMatches) {
                 session.setAttribute("user", user.get());
+
+                // 쿠키 설정
+                Cookie cookie = new Cookie("userName", user.get().getName());
+                cookie.setPath("/");
+                response.addCookie(cookie);
             }
             return passwordMatches;
         }

@@ -59,7 +59,7 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         System.out.println("Login attempt: " + loginRequest.getName());
-        boolean loginSuccess = userService.loginUser(loginRequest.getName(), loginRequest.getPassword());
+        boolean loginSuccess = userService.loginUser(loginRequest.getName(), loginRequest.getPassword(), response);
         if (loginSuccess) {
             System.out.println("Login successful for: " + loginRequest.getName());
             String userName = loginRequest.getName();
@@ -77,6 +77,8 @@ public class UserController {
             return ResponseEntity.status(401).body(responseBody);
         }
     }
+
+
 
     // 로그인 상태 확인
     @GetMapping("/me")
@@ -109,8 +111,7 @@ public class UserController {
     }
 }
 
-@Getter
-@Setter
+@Getter@Setter
 class LoginRequest {
     private String name;
     private String password;

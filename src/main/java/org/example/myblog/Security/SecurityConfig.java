@@ -25,15 +25,23 @@ public class SecurityConfig {
                                 .requestMatchers("/", "/api/users/register", "/api/users/login",
                                         "/css/**", "/js/**", "/images/**", "/register",
                                         "/api/users/name/**", "/api/users/email/**",
-                                        "/login", "/@**", "/api/blogs/**", "/api/users/logout",
-                                        "/blogs/@**").permitAll()
+                                        "/login", "/api/blogs/**", "/blogs/@**").permitAll()
                                 .anyRequest().authenticated()
                 )
-                .formLogin().loginPage("/login").permitAll()
+                .formLogin()
+                .loginPage("/login")
+                .defaultSuccessUrl("/", true)
+                .permitAll()
                 .and()
-                .logout().permitAll()
+                .logout()
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/login")
+                .permitAll()
                 .and()
-                .csrf().disable();
+                .csrf().disable()
+                .sessionManagement()
+                .maximumSessions(1)
+                .maxSessionsPreventsLogin(false);
         return http.build();
     }
 }
